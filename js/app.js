@@ -1,61 +1,24 @@
-/*
- * Create a list that holds all of your cards
- */
-/*
-   * List of cards (total of 16)
-   */
+//Create a list that holds all of your cards
+ 
+let cardList = ["fa fa-diamond", "fa fa-paper-plane-o", "fa fa-anchor", "fa fa-bolt", "fa fa-cube", "fa fa-leaf", "fa fa-bicycle", "fa fa-bomb", "fa fa-diamond", "fa fa-paper-plane-o", "fa fa-anchor", "fa fa-bolt", "fa fa-cube", "fa fa-leaf", "fa fa-bicycle", "fa fa-bomb"];
+let openedCard = [];
+var moves = 0;
+$("#moves").text(moves.toString());
+let starRating = "3";
+let timeCount = 0;
+let timerPtr;
+let corectPairs = 0;
 
-var moves_taken = 0;
-var first = 0;
-var second = 1;
-var total_moves_per_turn = 2;
+//shuffle the list of cards using the provided "shuffle" method below  */
+shuffle(cardList);
 
-   var card_deck = [
-    "fa fa-diamond",
-    "fa fa-paper-plane-o",
-    "fa fa-anchor",
-    "fa fa-bolt",
-    "fa fa-cube",
-    "fa fa-anchor",
-    "fa fa-leaf",
-    "fa fa-bicycle",
-    "fa fa-diamond",
-    "fa fa-bomb",
-    "fa fa-leaf",
-    "fa fa-bomb",
-    "fa fa-bolt",
-    "fa fa-bicycle",
-    "fa fa-paper-plane-o",
-    "fa fa-cube"];
-
-let opened_card = [];
-/*
- * Display the cards on the page
- *   - shuffle the list of cards using the provided "shuffle" method below
- *   - loop through each card and create its HTML
- *   - add each card's HTML to the page
- */
-
-shuffle(card_deck);
-let shuffled = shuffle(card_deck);
-        $('#card_0').removeClass().addClass(shuffled[0]);
-        $('#card_1').removeClass().addClass(shuffled[1]);
-        $('#card_2').removeClass().addClass(shuffled[2]);
-        $('#card_3').removeClass().addClass(shuffled[3]);
-        $('#card_4').removeClass().addClass(shuffled[4]);
-        $('#card_5').removeClass().addClass(shuffled[5]);
-        $('#card_6').removeClass().addClass(shuffled[6]);
-        $('#card_7').removeClass().addClass(shuffled[7]);
-        $('#card_8').removeClass().addClass(shuffled[8]);
-        $('#card_9').removeClass().addClass(shuffled[9]);
-        $('#card_10').removeClass().addClass(shuffled[10]);
-        $('#card_11').removeClass().addClass(shuffled[11]);
-        $('#card_12').removeClass().addClass(shuffled[12]);
-        $('#card_13').removeClass().addClass(shuffled[13]);
-        $('#card_14').removeClass().addClass(shuffled[14]);
-        $('#card_15').removeClass().addClass(shuffled[15]);
-
-
+function again(){
+$(".card").find("i").each(function( index ) {
+  $(this).removeClass(cardList).addClass(cardList[index]);
+});
+};
+again();
+console.log(cardList);
 // Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -70,60 +33,147 @@ function shuffle(array) {
 
     return array;
 }
-shuffle(card_deck);
- 
-$(".card").on('click', function(){
-$(this).addClass("open show");
-opened_card.push($(this).find("i").attr("class"));
-console.log(opened_card);
+
+//Remove classes at the begginig or when clicking reset
+function removeAll(){
+    $(".card").each(function() {
+    $(this).removeClass("show match open marked");
+    });
     
+    }
+removeAll();
+
+//clicking the reset button
+$(".restart").click(function(){
+    allReset();
 });
 
+function allReset(){
+    removeAll();
+    shuffle(cardList);
+    again();
+    restartMoves();
+    timeCount = 0;
+}
+
+//set up the event listener for a card. If a card is clicked:
+ $(".card").click(function(){
+     updateMoves();
+     let card = $(this);
+     let cardClass = card.find("i").attr("class");
+     showCard(card);
+     pushCard(cardClass);
+     let markedCard = $(this).addClass("marked");
+     
+     if (openedCard.length === 2){
+         if (openedCard[0] === openedCard[1]){
+                $(".marked").each(function(){
+                    $(this).addClass("match");
+                    $(this).removeClass("show open marked");
+        
+            });
+                openedCard = [];
+                corectPairs ++;
+                if (corectPairs === 8){
+                    playerWin();
+                }
+             
+                }
+         else { 
+                setTimeout(wrongPair,500);
+                openedCard = [];}
+         
+     }
+    
+ });
+//fnction when the cards do not match
+function wrongPair() {
+             $(".marked").each(function(){
+                $(this).removeClass("show open marked");
+             });
+}
+
+//display the card's symbol (put this functionality in another function that you call from this one
+function showCard(x) {
+     x.addClass("show open");
+}
+//add the card to a *list* of "open" cards (put this functionality in another function that you call from this one)
 
 
-//RESTART
-$('.restart').click(function(){
-   again(); 
-});
+function pushCard(y) {
+        openedCard.push(y);
+}
+
+function updateMoves(){
+    
+    moves++;
+    $("#moves").text(moves.toString());
+    
+    if (moves > 0 && moves < 16) {
+    starRating = starRating;
+  } else if (moves >= 16 && moves <= 20) {
+    $("#starOne").removeClass("fa-star");
+    starRating = "2";
+  } else if (moves > 25) {
+    $("#starTwo").removeClass("fa-star");
+    starRating = "1";
+  }
+    
+}
+
+function restartMoves(){
+    moves = 0;
+    starRating = "3";
+    $("#starOne").addClass("fa-star");
+    $("#starTwo").addClass("fa-star");
+    $("#moves").text(moves.toString());
+    corectPairs = 0;
+    
+}
+// starts the timer
+function startTimer(){
+    timeCount += 1;
+    $("#timer").html(timeCount);
+    timerPtr = setTimeout(startTimer, 1000);
+}
+
+startTimer();
+//When correct pairs no. = 8, call function PlayerWin();
+if (corectPairs === 8){
+    playerWin();
+}
 
 
-function again() {
-        $('.card').removeClass('show open match');
-        $('.moves').text("0");
+//Function when the player win
+function playerWin(){
+    clearTimeout(timerPtr);
+    winnerPopUp();
+}
+
+
+// Open popup when game is complete source: www.w3schools.com
+function winnerPopUp() {
+
+    var modal = document.getElementById('win-popup');
+    var span = document.getElementsByClassName("close")[0];
+
+    $("#total-moves").text(moves);
+    $("#total-stars").text(starRating);
+    $("#second-time").text(timeCount);
+    modal.style.display = "block";
+
+  // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+   $("#play-again-btn").on("click", function() {
+       allReset();
+       startTimer();
+       modal.style.display = "none";
        
-        /** Star rating */
-      $('#first-star').removeClass('fa-star').addClass('fa-star-o');
-      $('#second-star').removeClass('fa-star').addClass('fa-star-o');
-      $('#third-star').removeClass('fa-star').addClass('fa-star-o');
-    let shuffled = shuffle(card_deck);
-        $('#card_0').removeClass().addClass(shuffled[0]);
-        $('#card_1').removeClass().addClass(shuffled[1]);
-        $('#card_2').removeClass().addClass(shuffled[2]);
-        $('#card_3').removeClass().addClass(shuffled[3]);
-        $('#card_4').removeClass().addClass(shuffled[4]);
-        $('#card_5').removeClass().addClass(shuffled[5]);
-        $('#card_6').removeClass().addClass(shuffled[6]);
-        $('#card_7').removeClass().addClass(shuffled[7]);
-        $('#card_8').removeClass().addClass(shuffled[8]);
-        $('#card_9').removeClass().addClass(shuffled[9]);
-        $('#card_10').removeClass().addClass(shuffled[10]);
-        $('#card_11').removeClass().addClass(shuffled[11]);
-        $('#card_12').removeClass().addClass(shuffled[12]);
-        $('#card_13').removeClass().addClass(shuffled[13]);
-        $('#card_14').removeClass().addClass(shuffled[14]);
-        $('#card_15').removeClass().addClass(shuffled[15]);
+       
+   });
 
-    
-    
-};
-again();
-/*
- * set up the event listener for a card. If a card is clicked:
- *  - display the card's symbol (put this functionality in another function that you call from this one)
- *  - add the card to a *list* of "open" cards (put this functionality in another function that you call from this one)
- *  - if the list already has another card, check to see if the two cards match
- *    + if the cards do match, lock the cards in the open position (put this functionality in another function that you call from this one)
- *    + if the cards do not match, remove the cards from the list and hide the card's symbol (put this functionality in another function that you call from this one)
- *    + increment the move counter and display it on the page (put this functionality in another function that you call from this one)
- *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
- */
+   clearInterval(timer);
+}
